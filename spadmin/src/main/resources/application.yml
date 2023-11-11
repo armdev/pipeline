@@ -1,0 +1,76 @@
+management:
+  tracing:
+    sampling:
+      probability: 1.0 
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL}
+
+  endpoint:
+    health:
+      enabled: true
+      show-details: ALWAYS
+  endpoints:
+    jmx:
+      exposure:
+       include: '*'
+    web:
+     exposure:
+      include: '*'
+      base-path: /actuator  
+    cors:
+      allowed-origins: 'true'
+      enabled-by-default: 'false'
+
+spring:
+  main:
+    allow-circular-references: false
+    lazy-initialization: false
+  application:
+    name: spadmin   
+    
+  profiles:
+    active:
+      ${BANK_ENV}
+      
+  security:
+    user:
+      name: "admin"
+      password: "admin"
+      
+#  boot:
+#    admin:
+#      client:
+#        username: "admin"       #These two are needed so that the client
+#        password: "admin"   #can register at the protected server api
+#        instance:
+#          metadata:
+#            user.name: "admin"         #These two are needed so that the server
+#            user.password: "admin" #can access the protected client endpoints
+
+server:
+   port: 1111
+   
+
+      
+logging:
+    pattern:
+      level: '%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]'  
+    level:
+      root: INFO
+      io.banqr.myarmenia: INFO
+      
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+    prefer-ip-address: true
+    leaseExpirationDurationInSeconds: 3
+    appname: spadmin
+    instanceId: spadmin:${spring.application.instance-id:${random.value}}
+  client:
+    enabled: true
+    registryFetchIntervalSeconds: 5
+    healthcheck:
+      enabled: true
+    serviceUrl:
+      defaultZone: http://eureka:8761/eureka

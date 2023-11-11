@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  timescale:
+    image: timescale/timescaledb:latest-pg15
+    build: ./timescale
+    container_name: timescaledb
+    command: postgres -c max_connections=5000 -c shared_buffers=1GB -c effective_cache_size=2GB -c maintenance_work_mem=512MB  
+    ports:
+      - "5432:5432"
+    environment:
+      - PGDATA=/var/lib/postgresql/data/timescaledb
+      - POSTGRES_DB=healthcare
+      - POSTGRES_USER=healthcare
+      - POSTGRES_PASSWORD=healthcare      
+    volumes:
+      - ~/volumes/data/timescaledb/logs/:/opt/postgres/logs
+      - ~/volumes/data/timescaledb/data:/var/lib/postgresql/data/timescaledb
+      - ./timescale/postgresql.conf:/etc/postgresql/postgresql.conf:rw     
+      - ./timescale/init-script/init-script.sh:/docker-entrypoint-initdb.d/init-script.sh:ro
+    sysctls:
+      - kernel.shmmax=100663296
+
+  pgadmin:
+    image: registry.gitlab.com/armdev/dockers/pgadmin:4
+    container_name: pgadmin4
+    restart: always    
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - ~/volumes/data/pgbackup/_data/pgadmin:/var/lib/pgadmin
+
+  eureka:
+    image: eureka  
+    build: ./eureka
+    env_file: ./eureka/.env
+    container_name: eureka 
+    ports:
+      - '8761:8761'  
+  
+      
+  zipkin:    
+    image: zipkin
+    build: ./zipkin
+    environment:
+     STORAGE_TYPE: mem
+    container_name: zipkin
+    links:   
+       - eureka   
+    ports:
+      - '9411:9411' 
+ 
+      
+  spadmin:
+    image: spadmin  
+    build: ./spadmin
+    env_file: ./spadmin/.env
+    container_name: spadmin        
+    ports:
+      - '1111:1111'
+  
+  eventcare:
+    image: eventcare  
+    build: ./eventcare  
+    env_file: ./eventcare/.env
+    container_name: eventcare
+    restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 8G
+    links:
+       - zipkin
+       - eureka
+    ports:
+      - '24000:24000'
+      - '24010:24010'
