@@ -7,9 +7,9 @@
     <packaging>pom</packaging>
     <modules>       
         <module>spadmin</module> 
-        <module>eureka</module>      
-        <module>eventcare</module> 
-          
+        <module>eureka</module>     
+        <module>producer</module>       
+        <module>eventcare</module>           
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

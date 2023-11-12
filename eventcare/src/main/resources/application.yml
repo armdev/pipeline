@@ -53,6 +53,20 @@ spring:
     allow-circular-references: false
   application:
     name: eventcare
+    
+  kafka:   
+    listener:
+      ack-mode: MANUAL  
+    consumer:
+      bootstrap-servers: kafka1:9092,kafka2:9093
+      group-id: event-duty
+      auto-offset-reset: earliest         
+      enable-auto-commit: false
+      session.timeout.ms: 30000
+      max-poll-records: 10
+      fetch-max-wait: 100
+      fetch-min-size: 504857600
+      
   profiles:
     active: prod
   threads:

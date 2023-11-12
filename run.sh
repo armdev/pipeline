@@ -4,4 +4,4 @@ set -e
 
 docker compose --compatibility up -d --build
 docker ps -a
-docker logs --follow timescaledb
+docker logs --follow producer

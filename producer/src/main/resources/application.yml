@@ -1,0 +1,101 @@
+management:
+  security:
+    enabled: false
+  server:
+    port: 25010
+    base-path: /management
+  tracing:
+    sampling:
+      probability: 1.0 
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL}
+  endpoint:
+    health:
+      enabled: true
+      show-details: ALWAYS
+    probes:
+      enabled: true
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState
+  endpoints:
+    jmx:
+      exposure:
+       include: '*'
+    web:
+     exposure:
+      include: '*'
+    cors:
+      allowed-origins: 'true'
+      enabled-by-default: 'false'
+
+server:
+    shutdown: GRACEFUL
+    http2:
+     enabled: true
+    port: 25000
+    servlet:
+      session:
+        timeout: 10m
+    undertow:
+      buffer-size: 80960
+      no-request-timeout: 15000  
+    compression:
+      enabled: true
+      mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+      min-response-size: 1024 
+
+      
+spring: 
+  main:
+    allow-bean-definition-overriding: false
+    allow-circular-references: false
+  application:
+    name: producer
+  profiles:
+    active: prod
+  threads:
+    virtual:
+      enabled: true
+    
+    
+  kafka:
+    listener:
+      ack-mode: MANUAL
+    producer:
+      batch-size: 1048570000
+      bootstrap-servers: kafka1:9092,kafka2:9093  
+      buffer-memory: 2048570000
+      client-id: patient-care
+      group-id: patient-care
+      retries: 10       
+
+
+  jackson:
+    serialization:
+      write_dates_as_timestamps: false
+
+logging:
+    level:
+      root: INFO
+      io.project: INFO
+        
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+    prefer-ip-address: true
+    leaseExpirationDurationInSeconds: 3
+    appname: eventcare
+    instanceId: eventcare:${spring.application.instance-id:${random.value}}
+  client:
+    enabled: true
+    registryFetchIntervalSeconds: 5
+    healthcheck:
+      enabled: true
+    serviceUrl:
+      defaultZone: http://eureka:8761/eureka
+      
+#https://blog.bytebytego.com/p/at-most-once-at-least-once-exactly
