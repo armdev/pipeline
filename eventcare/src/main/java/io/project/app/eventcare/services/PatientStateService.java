@@ -7,10 +7,9 @@ package io.project.app.eventcare.services;
 import io.project.app.eventcare.domain.PatientState;
 import io.project.app.eventcare.repositories.PatientStateJpaRepository;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,12 +24,26 @@ public class PatientStateService {
     @Autowired
     private PatientStateJpaRepository patientStateJpaRepository;
 
-    //@Async(value = "eventAsyncExecutor")
+    @Async(value = "eventAsyncExecutor")
     @Transactional
     public void generateAndSave() {
         long startTime = System.currentTimeMillis();
         log.info("Start Generation ");
         List<PatientState> patientStatesSet = PatientStateDataGenerator.generateData(100000);
+
+        log.info("Start Saving ");
+        patientStateJpaRepository.saveAllAndFlush(patientStatesSet);
+        long finishTime = System.currentTimeMillis();
+        long elapsedTime = finishTime - startTime;
+        log.info("Generated and saved 10000 patient states in " + elapsedTime + " milliseconds.");
+    }
+
+    @Transactional
+    @Async(value = "eventAsyncExecutor")
+    public void generateAndSaveWithId(String firstId, String secondId) {
+        long startTime = System.currentTimeMillis();
+        log.info("Start Generation ");
+        List<PatientState> patientStatesSet = PatientStateDataGenerator.generateDataWithId(100000, firstId, secondId);
 
         log.info("Start Saving ");
         patientStateJpaRepository.saveAllAndFlush(patientStatesSet);

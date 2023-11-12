@@ -24,7 +24,7 @@ public class PatientStateDataGenerator {
     public static List<PatientState> generateData(int numberOfRecords) {
         List<PatientState> patientStates = new CopyOnWriteArrayList<>();
 
-        ForkJoinPool forkJoinPool = new ForkJoinPool(100); // Adjust the parallelism level as needed
+        ForkJoinPool forkJoinPool = new ForkJoinPool(300); // Adjust the parallelism level as needed
 
         forkJoinPool.submit(()
                 -> IntStream.range(0, numberOfRecords)
@@ -37,6 +37,38 @@ public class PatientStateDataGenerator {
                             patientState.setEventTime(time.toInstant(ZoneOffset.UTC).toEpochMilli());
                             patientState.setPatient(UUID.randomUUID().toString());
                             patientState.setDoctor(UUID.randomUUID().toString());
+                            patientState.setLocation(faker.medical().hospitalName());
+                            patientState.setOperation(faker.medical().diseaseName());
+                            patientState.setPast(faker.medical().diseaseName());
+                            patientState.setNext(faker.medical().diseaseName());
+                            patientState.setReason(faker.medical().medicineName());
+                            patientState.setCondition(faker.medical().symptoms());
+                            patientState.setStatus(faker.lorem().word());
+                            patientState.setData(generateRandomJsonData());
+
+                            patientStates.add(patientState);
+                        })
+        ).join();
+
+        return patientStates;
+    }
+    
+    public static List<PatientState> generateDataWithId(int numberOfRecords, String firstId, String secondId) {
+        List<PatientState> patientStates = new CopyOnWriteArrayList<>();
+
+        ForkJoinPool forkJoinPool = new ForkJoinPool(300); // Adjust the parallelism level as needed
+
+        forkJoinPool.submit(()
+                -> IntStream.range(0, numberOfRecords)
+                        .parallel()
+                        .forEach(i -> {
+
+                            PatientState patientState = new PatientState();
+                            LocalDateTime time = generateRandomTime();
+                            patientState.setTime(time);
+                            patientState.setEventTime(time.toInstant(ZoneOffset.UTC).toEpochMilli());
+                            patientState.setPatient(firstId);
+                            patientState.setDoctor(secondId);
                             patientState.setLocation(faker.medical().hospitalName());
                             patientState.setOperation(faker.medical().diseaseName());
                             patientState.setPast(faker.medical().diseaseName());

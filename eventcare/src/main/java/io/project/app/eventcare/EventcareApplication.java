@@ -75,7 +75,7 @@ public class EventcareApplication {
     @Bean("eventAsyncExecutor")
     public Executor getAsyncExecutor() {
         return new ForkJoinPool(
-                50, ForkJoinPool.defaultForkJoinWorkerThreadFactory, null, true);
+                100, ForkJoinPool.defaultForkJoinWorkerThreadFactory, null, true);
     }
 
     @Bean
@@ -84,7 +84,7 @@ public class EventcareApplication {
                 .setStreamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(4000).build()));
     }
     
-        @Bean
+    @Bean
     public UndertowServletWebServerFactory undertowServletWebServerFactory() {
         UndertowServletWebServerFactory factory = new UndertowServletWebServerFactory();
         factory.addDeploymentInfoCustomizers((deploymentInfo) -> deploymentInfo.addInitialHandlerChainWrapper(handler -> new RequestEncodingHandler(handler)
