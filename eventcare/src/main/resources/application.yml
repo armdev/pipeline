@@ -111,7 +111,7 @@ spring:
     show-sql: false                      # Whether to show SQL statements in the console
     database: POSTGRESQL                 # Database dialect to use (e.g., POSTGRESQL, H2, MYSQL)
     hibernate:
-      ddl-auto: update                   # Hibernate DDL strategy (e.g., create, update, validate, none)
+      ddl-auto: none                  # Hibernate DDL strategy (e.g., create, update, validate, none)
       naming-strategy: org.hibernate.cfg.ImprovedNamingStrategy  # Naming strategy for Hibernate
       dialect: org.hibernate.dialect.PostgreSQL10Dialect         # Database dialect for Hibernate
       query:
