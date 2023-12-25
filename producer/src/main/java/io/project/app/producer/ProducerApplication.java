@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Optional;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.Banner;
@@ -14,12 +15,16 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.web.embedded.tomcat.TomcatProtocolHandlerCustomizer;
 import org.springframework.boot.web.embedded.undertow.UndertowServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
+import org.springframework.core.task.AsyncTaskExecutor;
+import org.springframework.core.task.support.TaskExecutorAdapter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -64,10 +69,16 @@ public class ProducerApplication {
         };
     }
 
-    @Bean("eventAsyncExecutor")
-    public Executor getAsyncExecutor() {
-        return new ForkJoinPool(
-                100, ForkJoinPool.defaultForkJoinWorkerThreadFactory, null, true);
+    @Bean(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME)
+    public AsyncTaskExecutor asyncTaskExecutor() {
+        return new TaskExecutorAdapter(Executors.newVirtualThreadPerTaskExecutor());
+    }
+
+    @Bean
+    public TomcatProtocolHandlerCustomizer<?> protocolHandlerVirtualThreadExecutorCustomizer() {
+        return protocolHandler -> {
+            protocolHandler.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
+        };
     }
 
     @Bean
@@ -76,13 +87,7 @@ public class ProducerApplication {
                 .setStreamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(4000).build()));
     }
     
-    @Bean
-    public UndertowServletWebServerFactory undertowServletWebServerFactory() {
-        UndertowServletWebServerFactory factory = new UndertowServletWebServerFactory();
-        factory.addDeploymentInfoCustomizers((deploymentInfo) -> deploymentInfo.addInitialHandlerChainWrapper(handler -> new RequestEncodingHandler(handler)
-                .addEncoding("gzip", GzipStreamSourceConduit.WRAPPER)));
-        return factory;
-    }
+  
 
     @EventListener(ApplicationReadyEvent.class)
     public void init() {
