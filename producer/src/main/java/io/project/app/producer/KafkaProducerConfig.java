@@ -18,7 +18,6 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @EnableKafka
@@ -46,28 +45,25 @@ public class KafkaProducerConfig {
 
     @Bean
     public KafkaTemplate<String, String> kafkaTemplate(KafkaProperties properties) {
-        Map<String, Object> props = properties.buildProducerProperties();
 
+        Map<String, Object> props = properties.buildProducerProperties(null);
         // Customize producer properties
         props.put(ProducerConfig.ACKS_CONFIG, "all");
         props.put(ProducerConfig.RETRIES_CONFIG, Integer.MAX_VALUE); // Retry indefinitely
         props.put(ProducerConfig.RETRIES_CONFIG, 10); // Retry 10 times
         props.put(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG, 15000); // Adjust based on your network conditions
-    //    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class.getName());
-      //  props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class.getName());
-        // If using Avro or other custom serializers, set them accordingly
-        // props.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
+
         return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(props));
     }
 
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
-            ConsumerFactory<String, String> consumerFactory) {
-
-        ConcurrentKafkaListenerContainerFactory<String, String> factory
-                = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory);
-
-        return factory;
-    }
+//    @Bean
+//    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(
+//            ConsumerFactory<String, String> consumerFactory) {
+//
+//        ConcurrentKafkaListenerContainerFactory<String, String> factory
+//                = new ConcurrentKafkaListenerContainerFactory<>();
+//        factory.setConsumerFactory(consumerFactory);
+//
+//        return factory;
+//    }
 }
