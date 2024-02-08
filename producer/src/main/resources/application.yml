@@ -33,20 +33,26 @@ management:
       enabled-by-default: 'false'
 
 server:
-    shutdown: GRACEFUL
-    http2:
+  tomcat:
+    accept-count: 5000
+    connection-timeout: 10000
+    keep-alive-timeout: 10000   
+    max-connections: 3000
+    max-http-form-post-size: -1
+    threads:        
+      max: 2000
+      min-spare: 20  
+  shutdown: GRACEFUL
+  http2:
      enabled: true
-    port: 25000
-    servlet:
+  port: 25000
+  servlet:
       session:
         timeout: 10m
-    undertow:
-      buffer-size: 80960
-      no-request-timeout: 15000  
-    compression:
+  compression:
       enabled: true
       mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
-      min-response-size: 1024 
+      min-response-size: 1024
 
       
 spring:  
@@ -74,9 +80,8 @@ spring:
       buffer-memory: 2048570000
       client-id: patient-care
       group-id: patient-care
-      retries: 10       
-
-
+      retries: 10
+      
   jackson:
     serialization:
       write_dates_as_timestamps: false
